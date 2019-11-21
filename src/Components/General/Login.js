@@ -41,18 +41,35 @@ class Login extends React.Component {
     }
 }
 
+// function to control the content of the page
+function LoginControl(props){
+    let addChild;
+
+}
+
 function LoginForm(){
     const [validated, setValidated] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
-  const handleSubmit = event => {
-    const form = event.currentTarget;
-    if (form.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
+    const handleSubmit = event => {
+        const form = event.currentTarget;
+
+        if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        setValidated(true);
+    };
+
+    const handleEmailChange = (event) => {
+        setEmail(event.target.value);
     }
 
-    setValidated(true);
-  };
+    const handlePasswordChange = (event) => {
+        setPassword(event.target.value);
+    }
 
     return(
         <Form noValidate validated={validated} onSubmit={handleSubmit}>
@@ -63,7 +80,7 @@ function LoginForm(){
                         <InputGroup.Prepend>
                             <InputGroup.Text id="inputGroupPrepend">@</InputGroup.Text>
                         </InputGroup.Prepend>
-                        <Form.Control type="text" aria-describedby="inputGroupPrepend" placeholder="Email@email.com" required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" />
+                        <Form.Control type="text" aria-describedby="inputGroupPrepend" placeholder="Email@email.com" required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" onChange={handleEmailChange} />
                         <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
                         <Form.Control.Feedback type="invalid">
                             Please choose a valid email address.
@@ -75,12 +92,13 @@ function LoginForm(){
             <Form.Row>
                 <Form.Group as={Col} md="12" controlId="validationCustom06">
                     <Form.Label>Password</Form.Label>
-                    <Form.Control type="Password" placeholder="Password" required minLength="5" maxLength="10" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}"/>
+                    <Form.Control type="Password" placeholder="Password" required minLength="5" maxLength="10" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{5,}" onChange={handlePasswordChange} />
                     <Form.Control.Feedback type="invalid">
-                        Please enter password. Password must contain at least one upper case letter, at least one lower case letter and at least one number.
+                        Please enter password (length between 5-10 letters). Password must contain at least one upper case letter, at least one lower case letter and at least one number.
                     </Form.Control.Feedback>
                 </Form.Group>
             </Form.Row>
+
             <Button type="submit">Submit form</Button>
         </Form>
     );

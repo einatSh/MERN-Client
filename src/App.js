@@ -52,7 +52,7 @@ class App extends React.Component {
               <Nav.Link as={Link} to="/">Home</Nav.Link>
               <Nav.Link as={Link} to="/about">About</Nav.Link>
 
-              <LoginControl isLoggedIn={this.state.isLoggedIn} isAdmin={this.state.isAdmin} />
+              <NavLoginControl isLoggedIn={this.state.isLoggedIn} isAdmin={this.state.isAdmin} />
 
             </Nav>
           </Navbar.Collapse>
@@ -86,11 +86,12 @@ class App extends React.Component {
   }
 }
 
-/* Adds user menu to the navigation bar - 
+/* function to control the view of the dropdown menu inside the navigatiion bar 
+  Adds user menu to the navigation bar - 
         if a user is logged in - display user menu
         else - display defualt menu
 */
-function LoginControl(props) {
+function NavLoginControl(props) {
     let addChild;
 
     if(props.isLoggedIn){
