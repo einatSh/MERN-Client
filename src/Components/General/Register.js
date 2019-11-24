@@ -10,6 +10,8 @@ class Register extends React.Component {
         this.state = {
             isValid: false
         }
+
+        // bind handlers
         this.handleValidation = this.handleValidation.bind(this);
     }
 
@@ -99,42 +101,28 @@ function RegisterForm(props){
             event.preventDefault();
             event.stopPropagation();
         }
+        else {
+            // validity checks
+            if(password !== passwordConfirm){
+                alert("Passwords missmatch!");
+                valid = false;
+            }
 
-        // validity checks
-        if(password !== passwordConfirm){
-            alert("Passwords missmatch!");
-            valid = false;
+            // if passwords match, try to add the user
+            if(valid){
+                axios.post("/users/register", toRegister).then(res => res.json().then(res =>{
+                if(res.data === true){
+                    // complete registration if user added successfully 
+                    props.handleValidation();
+                }
+                else{
+                    alert("Email is already registered in the system.");
+                }
+            }));
+            }
         }
-
-        let userExists = null;
-        axios.get("/users/getUser", toRegister).then(res => alert(res.data.email)
-        // .then(res => 
-        //     {
-        //     alert("Email: " + res.email + " is already registered to the system");
-        //     valid = false;
-        // }
-        );
-        // if(userExists !== null){
-        //     //alert("Email: " + userExists.email + " is already registered");
-        //     valid = false;
-        // }
-
-
-        // add the user
-        if(valid){
-            let result = axios.post("/users/register", toRegister);
-            // .then(res => res.json()).then(res => {
-            //     if(res.data != "user added"){
-            //         alert("Email is already registered in the system.");
-            //     }
-            //     else {
-            //         // complete registration
-            //         props.handleValidation();
-            //     }
-            // });
-        }
+        
         setValidated(true);
-
     };
 
     // onChange handlers for the form feilds

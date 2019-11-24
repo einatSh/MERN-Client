@@ -1,7 +1,48 @@
 import React, {useState} from "react";
 import {Row, Col, Form, Button, InputGroup} from 'react-bootstrap';
+import axios from 'axios';
 
 class Login extends React.Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            controlFlags: {
+                isInitialState: true,
+                isEmailLogin: false,
+                isOtherLogin: false,
+            },
+            loggedUser: null
+        }
+
+        // bind handlers
+        this.handlers.handleInitialStateChange = this.handlers.handleInitialStateChange.bind(this);
+        this.handlers.handleOtherLoginChange = this.handlers.handleOtherLoginChange.bind(this);
+        this.handlers.handleEmailLoginChange = this.handlers.handleEmailLoginChange.bind(this);
+        this.handlers.handleLoginSuccess = this.handlers.handleLoginSuccess.bind(this);
+    }
+
+    handlers = {
+        handleInitialStateChange: () => {
+            this.setState({controlFlags: {isInitialState: !this.state.controlFlags.isInitialState}});
+        },
+        handleOtherLoginChange: () => {
+            this.setState({controlFlags: {isOtherLogin: !this.state.controlFlags.isOtherLogin}});
+        },
+        handleEmailLoginChange: () => {
+            this.setState({controlFlags: {isEmailLogin: !this.state.controlFlags.isEmailLogin}})
+        },
+        handleLoginSuccess: (user) => {
+            this.setState({loggedUser: user});
+            if(user.isAdmin){
+                this.props.handleIsAdmin();
+            }
+            this.props.handleUserLogin(user);
+
+            // redirect back to the main page
+            window.location.href = "/";
+        }
+    }
+
     render() {
         const leftStyle = {
             textAlign: "center", 
@@ -26,11 +67,7 @@ class Login extends React.Component {
                         
                     </Col>
 
-                    <Col style={{textAlign: "center"}}>
-                        <h1>Log-in Form</h1>
-                        <p style={{color: "rgba(97, 96, 96)"}}>Fill in all fields to log-in</p>
-                        <LoginForm></LoginForm>
-                    </Col>
+                    <LoginControl controlFlags={this.state.controlFlags} handlers={this.handlers} />
                     
                     <Col style={rightStyle}>
                         <p>News</p>
@@ -45,22 +82,75 @@ class Login extends React.Component {
 function LoginControl(props){
     let addChild;
 
+    const handleEmailLogin = () => {
+        props.handlers.handleInitialStateChange();
+        props.handlers.handleEmailLoginChange();
+    }
+
+    const handleOtherLogin = () => {
+        props.handlers.handleInitialStateChange();
+        props.handlers.handleOtherLoginChange();
+    }
+
+    if(props.controlFlags.isInitialState){
+        addChild = <div style={{marginTop: "15%"}}>
+                        <Button variant="outline-primary" style={{marginRight: "5%"}} onClick={() => handleEmailLogin()}>Login with email</Button> 
+                        <Button variant="outline-primary" disabled onClick={() => handleOtherLogin()}>Other Login</Button>
+                    </div>
+    }
+    else if(props.controlFlags.isEmailLogin){
+        addChild = <div>
+                        <p style={{color: "rgba(97, 96, 96)"}}>Fill in all fields to log-in</p>
+                        <LoginForm handleLoginSuccess={props.handlers.handleLoginSuccess} ></LoginForm>
+                    </div>
+    }
+    else if(props.controlFlags.isOtherLogin){
+
+    }
+
+    return <Col style={{textAlign: "center"}}>
+        <h1>Log-in Form</h1>
+        {addChild}              
+    </Col>
 }
 
-function LoginForm(){
+function LoginForm(props){
     const [validated, setValidated] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     const handleSubmit = event => {
         const form = event.currentTarget;
+        const toLogin = {
+            email: email,
+            password: password
+        }
+        event.preventDefault();
 
         if (form.checkValidity() === false) {
-            event.preventDefault();
             event.stopPropagation();
         }
+        else {
+            // try to login user from db
+            const result = axios.get("/users/login", toLogin);
+
+            // user doesn't exist or password mismatch email
+            if(result.user == null || result.user.passMismatch){
+                alert(result.user == null);
+                //alert(result.user == null ? "Email address doesn't exist" : "Password doesn't match email");
+                
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            else{
+                props.handleLoginSuccess(result.user);
+            }
+            
+        }
+
 
         setValidated(true);
+        
     };
 
     const handleEmailChange = (event) => {
@@ -80,7 +170,7 @@ function LoginForm(){
                         <InputGroup.Prepend>
                             <InputGroup.Text id="inputGroupPrepend">@</InputGroup.Text>
                         </InputGroup.Prepend>
-                        <Form.Control type="text" aria-describedby="inputGroupPrepend" placeholder="Email@email.com" required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" onChange={handleEmailChange} />
+                        <Form.Control type="text" aria-describedby="inputGroupPrepend" placeholder="Email@email.com" required pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" onChange={handleEmailChange} />
                         <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
                         <Form.Control.Feedback type="invalid">
                             Please choose a valid email address.

@@ -16,29 +16,15 @@ class App extends React.Component {
   constructor(props){
     super(props);
     this.state = { 
-      isLoggedIn: false,
-      isAdmin: false
+      loggedUser: null
     };
-    this.handleLogin = this.handleLogin.bind(this);
-    this.handleLogout = this.handleLogout.bind(this);
-    this.handleAdminLogin = this.handleAdminLogin.bind(this);
-    this.handleAdminLogout = this.handleAdminLogout.bind(this);
+
+    // bind handlers
+    this.handleUserLogin = this.handleUserLogin.bind(this);
   }
 
-  handleLogin = () => {
-    this.setState({ isLoggedIn: true });
-  }
-
-  handleLogout = () => {
-    this.setState({ isLoggedIn: false });
-  }
-
-  handleAdminLogin = () => {
-    this.setState({ isAdmin: true });
-  }
-
-  handleAdminLogout = () => {
-    this.setState({ isAdmin: false });
+  handleUserLogin = (user) => {
+    this.setState({loggedUser: user});
   }
 
   render() {   
@@ -52,7 +38,7 @@ class App extends React.Component {
               <Nav.Link as={Link} to="/">Home</Nav.Link>
               <Nav.Link as={Link} to="/about">About</Nav.Link>
 
-              <NavLoginControl isLoggedIn={this.state.isLoggedIn} isAdmin={this.state.isAdmin} />
+              <NavLoginControl loggedUser={this.state.loggedUser} />
 
             </Nav>
           </Navbar.Collapse>
@@ -60,19 +46,19 @@ class App extends React.Component {
 
         {/* add more pathes once the pages are built */}
         <Switch>
-            <Route path="/about">
+            <Route path="/about" Component={About}>
               <About />
             </Route>
 
-            <Route path="/register">
+            <Route path="/register" Component={Register}>
               <Register />
             </Route>
 
-            <Route path="/login">
+            <Route path="/login" render={this.handleUserLogin}>
               <Login />
             </Route>
 
-            <Route path="/users">
+            <Route path="/users" Component={Users}>
               <Users />
             </Route>
             
@@ -94,29 +80,30 @@ class App extends React.Component {
 function NavLoginControl(props) {
     let addChild;
 
-    if(props.isLoggedIn){
-      if(!props.isAdmin){
+    if(props.loggedUser === null){
+      addChild = <div>
+                    <NavDropdown.Item as={Link} to="/login">Login</NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/register">Register</NavDropdown.Item>
+                  </div>
+    }
+    else{
+      if(props.loggedUser.isAdmin){
         addChild =  <div>
-          <NavDropdown.Item as={Link} to="/option1">option 1</NavDropdown.Item>
-          <NavDropdown.Item as={Link} to="/option2">option 2</NavDropdown.Item>
-          <NavDropdown.Divider />
-          <NavDropdown.Item >Logout</NavDropdown.Item>
-        </div>
+                      <NavDropdown.Item as={Link} to="/option1">option 1</NavDropdown.Item>
+                      <NavDropdown.Item as={Link} to="/option2">option 2</NavDropdown.Item>
+                      <NavDropdown.Item as={Link} to="/users">Users Table</NavDropdown.Item>
+                      <NavDropdown.Divider />
+                      <NavDropdown.Item >Logout</NavDropdown.Item>
+                    </div>
       }
       else {
         addChild =  <div>
-          <NavDropdown.Item as={Link} to="/option1">option 1</NavDropdown.Item>
-          <NavDropdown.Item as={Link} to="/option2">option 2</NavDropdown.Item>
-          <NavDropdown.Item as={Link} to="/users">Users Table</NavDropdown.Item>
-          <NavDropdown.Divider />
-          <NavDropdown.Item >Logout</NavDropdown.Item>
-        </div>
+                      <NavDropdown.Item as={Link} to="/option1">option 1</NavDropdown.Item>
+                      <NavDropdown.Item as={Link} to="/option2">option 2</NavDropdown.Item>
+                      <NavDropdown.Divider />
+                      <NavDropdown.Item >Logout</NavDropdown.Item>
+                    </div>
       }
-    }
-    else{
-      addChild = <div>
-        <NavDropdown.Item as={Link} to="/login">Login</NavDropdown.Item>
-        <NavDropdown.Item as={Link} to="/register">Register</NavDropdown.Item></div>
     }
 
     return(<NavDropdown style={{position: "absolute", right: "0", marginRight: "7%"}} id="basic-nav-dropdown" title={
