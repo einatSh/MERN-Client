@@ -16,15 +16,53 @@ class App extends React.Component {
   constructor(props){
     super(props);
     this.state = { 
-      loggedUser: null
+      loggedUser: null, // change back to loggedUsser: {isAdmin: true}
+      screenDimentions: {
+        screenHeight: 0,
+        screenWidth: 0
+      }
     };
 
     // bind handlers
     this.handleUserLogin = this.handleUserLogin.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
   }
 
+  // lifecycle method - will be called once the component mounts
+  componentDidMount() {
+    // get screen dimentions and set an event listener for screen resizing 
+    this.updateWindowDimensions();
+    window.addEventListener('resize', this.updateWindowDimensions);
+
+    if(localStorage && localStorage.getItem("loggedUser")){
+      this.setState({loggedUser: JSON.parse(localStorage.getItem("loggedUser"))});
+      console.log(localStorage.getItem("loggedUser"));
+    }
+
+    
+  }
+
+  // lifecycle method - will be called once the component unmounts
+  componentWillUnmount = () => {
+      // remove the  event listener
+      window.removeEventListener('resize', this.updateWindowDimensions);
+      // delete the user from localstorage
+      localStorage.removeItem("loggedUser");
+  }
+
+  // get the screen dimentions
+  updateWindowDimensions = () => {
+    this.setState({ screenDimentions: {screenWidth: window.innerWidth, screenHeight: window.innerHeight} });
+  }
+
+  // login and logout handlers
   handleUserLogin = (user) => {
-    this.setState({loggedUser: user});
+    console.log(user);
+    this.setState({loggedUser: {user}});
+  }
+
+  handleLogout = () => {
+    this.setState({loggedUser: null});
   }
 
   render() {   
@@ -38,7 +76,7 @@ class App extends React.Component {
               <Nav.Link as={Link} to="/">Home</Nav.Link>
               <Nav.Link as={Link} to="/about">About</Nav.Link>
 
-              <NavLoginControl loggedUser={this.state.loggedUser} />
+              <NavLoginControl loggedUser={this.state.loggedUser} handleLogout={this.handleLogout} />
 
             </Nav>
           </Navbar.Collapse>
@@ -46,24 +84,24 @@ class App extends React.Component {
 
         {/* add more pathes once the pages are built */}
         <Switch>
-            <Route path="/about" Component={About}>
-              <About />
+            <Route path="/about" >
+              <About screenDimentions={this.state.screenDimentions} />
             </Route>
 
-            <Route path="/register" Component={Register}>
-              <Register />
+            <Route path="/register" >
+              <Register screenDimentions={this.state.screenDimentions} />
             </Route>
 
-            <Route path="/login" render={this.handleUserLogin}>
-              <Login />
+            <Route path="/login" >
+              <Login screenDimentions={this.state.screenDimentions} handleUserLogin={this.handleUserLogin} />
             </Route>
 
-            <Route path="/users" Component={Users}>
-              <Users />
+            <Route path="/users" >
+              <Users screenDimentions={this.state.screenDimentions}/>
             </Route>
             
             <Route path="/">
-              <Home />
+              <Home screenDimentions={this.state.screenDimentions} />
             </Route>
           </Switch>
           <Footer></Footer>
@@ -93,7 +131,7 @@ function NavLoginControl(props) {
                       <NavDropdown.Item as={Link} to="/option2">option 2</NavDropdown.Item>
                       <NavDropdown.Item as={Link} to="/users">Users Table</NavDropdown.Item>
                       <NavDropdown.Divider />
-                      <NavDropdown.Item >Logout</NavDropdown.Item>
+                      <NavDropdown.Item onClick={props.handleLogout} >Logout</NavDropdown.Item>
                     </div>
       }
       else {
@@ -101,7 +139,7 @@ function NavLoginControl(props) {
                       <NavDropdown.Item as={Link} to="/option1">option 1</NavDropdown.Item>
                       <NavDropdown.Item as={Link} to="/option2">option 2</NavDropdown.Item>
                       <NavDropdown.Divider />
-                      <NavDropdown.Item >Logout</NavDropdown.Item>
+                      <NavDropdown.Item onClick={props.handleLogout} >Logout</NavDropdown.Item>
                     </div>
       }
     }

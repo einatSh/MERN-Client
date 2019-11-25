@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import {Row, Col, Form, Button, InputGroup} from 'react-bootstrap';
 import axios from 'axios';
+import { Redirect } from 'react-router-dom'
 
 class Login extends React.Component {
     constructor(props){
@@ -18,7 +19,6 @@ class Login extends React.Component {
         this.handlers.handleInitialStateChange = this.handlers.handleInitialStateChange.bind(this);
         this.handlers.handleOtherLoginChange = this.handlers.handleOtherLoginChange.bind(this);
         this.handlers.handleEmailLoginChange = this.handlers.handleEmailLoginChange.bind(this);
-        this.handlers.handleLoginSuccess = this.handlers.handleLoginSuccess.bind(this);
     }
 
     handlers = {
@@ -31,15 +31,28 @@ class Login extends React.Component {
         handleEmailLoginChange: () => {
             this.setState({controlFlags: {isEmailLogin: !this.state.controlFlags.isEmailLogin}})
         },
-        handleLoginSuccess: (user) => {
-            this.setState({loggedUser: user});
-            if(user.isAdmin){
-                this.props.handleIsAdmin();
-            }
-            this.props.handleUserLogin(user);
+        handleLoggedUserChange: (user) => {
+            let isAdmin;
 
-            // redirect back to the main page
-            window.location.href = "/";
+            if(user.index === 0){
+                isAdmin = true;
+            }
+            else {
+                isAdmin = false;
+            }
+
+            this.setState({loggedUser: {
+                index: user.index,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                userName: user.userName,
+                email: user.email,
+                password: user.password,
+                isAdmin: isAdmin
+            }});
+
+            localStorage.setItem('loggedUser',JSON.stringify(this.state.loggedUser));
+
         }
     }
 
@@ -59,15 +72,20 @@ class Login extends React.Component {
             backgroundColor: "rgba(124, 123, 123, 0.05)"
         }
 
+        if(this.state.loggedUser !== null){
+            return <Redirect to={"/"}/>
+        }
+
         return (
-            <div style={{width: "100%", height: "100%"}}>
-                <Row>
+            <div style={{width: this.props.screenDimentions.screenWidth, height: this.props.screenDimentions.screenHeight-120}}>
+
+                <Row style={{height: "100%"}}>
                     <Col style={leftStyle}>
                         <h1 style={{fontSize: "25px"}}>Header</h1>
                         
                     </Col>
 
-                    <LoginControl controlFlags={this.state.controlFlags} handlers={this.handlers} />
+                    <LoginControl controlFlags={this.state.controlFlags} handlers={this.handlers} handleUserLogin={this.props.handleUserLogin} />
                     
                     <Col style={rightStyle}>
                         <p>News</p>
@@ -101,7 +119,7 @@ function LoginControl(props){
     else if(props.controlFlags.isEmailLogin){
         addChild = <div>
                         <p style={{color: "rgba(97, 96, 96)"}}>Fill in all fields to log-in</p>
-                        <LoginForm handleLoginSuccess={props.handlers.handleLoginSuccess} ></LoginForm>
+                        <LoginForm handleLoggedUserChange={props.handlers.handleLoggedUserChange} ></LoginForm>
                     </div>
     }
     else if(props.controlFlags.isOtherLogin){
@@ -130,28 +148,19 @@ function LoginForm(props){
         if (form.checkValidity() === false) {
             event.stopPropagation();
         }
-        else {
-            // try to login user from db
-            const result = axios.get("/users/login", toLogin);
-
-            // user doesn't exist or password mismatch email
-            if(result.user == null || result.user.passMismatch){
-                alert(result.user == null);
-                //alert(result.user == null ? "Email address doesn't exist" : "Password doesn't match email");
-                
-                event.preventDefault();
-                event.stopPropagation();
+        
+        // try to login user from db
+        axios.post("/users/login", toLogin).then(res => {
+            if(res.data.user == null || res.data.user.passMismatch){
+                const alertString = (res.data.user == null) ? "Email address doesn't exist." : "Password doesn't match email.";
+                alert(alertString);
             }
             else{
-                props.handleLoginSuccess(result.user);
+                props.handleLoggedUserChange(res.data.user);
             }
-            
-        }
-
-
+        })
         setValidated(true);
-        
-    };
+    }
 
     const handleEmailChange = (event) => {
         setEmail(event.target.value);

@@ -36,7 +36,7 @@ class Register extends React.Component {
         }
 
         return (
-            <div style={{width: "100%", height: "100vh"}}>
+            <div style={{width: this.props.screenDimentions.screenWidth, height: this.props.screenDimentions.screenHeight-100}}>
                 <Row style={{height: "100%"}}>
                     <Col style={leftStyle}>
                         <h1 style={{fontSize: "25px"}} >Header</h1>
@@ -97,29 +97,30 @@ function RegisterForm(props){
             password: password
         }
 
-        if (form.checkValidity() === false) {
-            event.preventDefault();
+        event.preventDefault();
+
+        if (!form.checkValidity()) {
             event.stopPropagation();
         }
-        else {
-            // validity checks
-            if(password !== passwordConfirm){
-                alert("Passwords missmatch!");
-                valid = false;
-            }
+        
+        // validity checks
+        if(password !== passwordConfirm){
+            alert("Passwords missmatch!");
+            valid = false;
+        }
 
-            // if passwords match, try to add the user
-            if(valid){
-                axios.post("/users/register", toRegister).then(res => res.json().then(res =>{
-                if(res.data === true){
+        // if passwords match, try to add the user
+        if(valid && form.checkValidity()){
+            axios.post("/users/register", toRegister).then(res => {
+                alert(res.data.userAdded)
+                if(res.data.userAdded === true){
                     // complete registration if user added successfully 
                     props.handleValidation();
                 }
                 else{
                     alert("Email is already registered in the system.");
                 }
-            }));
-            }
+            }).catch(err => console.log(err));
         }
         
         setValidated(true);
