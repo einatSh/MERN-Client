@@ -13,16 +13,23 @@ class Users extends React.Component {
     // lifecycle method - will be called once the component mounts
     componentDidMount() {
         axios.get("/users").then(res => {
-            this.setState({
-                users: res.data.users.map((user) => ({
-                    index: user.index,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    userName: user.userName,
-                    email: user.email,
-                    password: user.password
-                }))
-            });
+            if(res.data.success === true){
+                let index = 0;
+
+                this.setState({
+                    users: res.data.body.users.map((user) => ({
+                        index: index++,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        userName: user.userName,
+                        email: user.email,
+                        password: user.password
+                    }))
+                });
+            }
+            else{
+                console.log(res.data.body.message);
+            }
         })
     }
 

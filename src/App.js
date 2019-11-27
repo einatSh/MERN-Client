@@ -10,6 +10,7 @@ import Register from './Components/General/Register.js'
 import Login from './Components/General/Login.js'
 import Users from './Components/AdminOptions/Users.js'
 import {FaUser} from 'react-icons/fa'
+import UserPage from './Components/UserOptions/UserPage';
 
 
 class App extends React.Component {
@@ -34,11 +35,12 @@ class App extends React.Component {
     this.updateWindowDimensions();
     window.addEventListener('resize', this.updateWindowDimensions);
 
-    if(localStorage && localStorage.getItem("loggedUser")){
-      this.setState({loggedUser: JSON.parse(localStorage.getItem("loggedUser"))});
-      console.log(localStorage.getItem("loggedUser"));
-    }
-
+    // if(localStorage && localStorage.getItem("loggedUser")){
+    //   this.setState({loggedUser: JSON.parse(localStorage.getItem("loggedUser"))});
+    //   console.log(localStorage.getItem("loggedUser"));
+    // }
+    //   // delete the user from localstorage
+    //   localStorage.removeItem("loggedUser");
     
   }
 
@@ -46,8 +48,6 @@ class App extends React.Component {
   componentWillUnmount = () => {
       // remove the  event listener
       window.removeEventListener('resize', this.updateWindowDimensions);
-      // delete the user from localstorage
-      localStorage.removeItem("loggedUser");
   }
 
   // get the screen dimentions
@@ -100,6 +100,10 @@ class App extends React.Component {
               <Users screenDimentions={this.state.screenDimentions}/>
             </Route>
             
+            <Route path="/user">
+              <UserPage screenDimentions={this.state.screenDimentions} />
+            </Route>
+
             <Route path="/">
               <Home screenDimentions={this.state.screenDimentions} />
             </Route>

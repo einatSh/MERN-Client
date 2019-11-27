@@ -51,7 +51,7 @@ class Login extends React.Component {
                 isAdmin: isAdmin
             }});
 
-            localStorage.setItem('loggedUser',JSON.stringify(this.state.loggedUser));
+            //localStorage.setItem('loggedUser',JSON.stringify(this.state.loggedUser));
 
         }
     }
@@ -151,12 +151,11 @@ function LoginForm(props){
         
         // try to login user from db
         axios.post("/users/login", toLogin).then(res => {
-            if(res.data.user == null || res.data.user.passMismatch){
-                const alertString = (res.data.user == null) ? "Email address doesn't exist." : "Password doesn't match email.";
-                alert(alertString);
+            if(res.data.success === false){
+                alert(res.data.body);
             }
             else{
-                props.handleLoggedUserChange(res.data.user);
+                props.handleLoggedUserChange(res.data.body);
             }
         })
         setValidated(true);

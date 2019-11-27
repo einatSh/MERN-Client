@@ -112,13 +112,15 @@ function RegisterForm(props){
         // if passwords match, try to add the user
         if(valid && form.checkValidity()){
             axios.post("/users/register", toRegister).then(res => {
-                alert(res.data.userAdded)
-                if(res.data.userAdded === true){
-                    // complete registration if user added successfully 
-                    props.handleValidation();
+                if(res.data.error === true){
+                    console.log(res.data.body);
+                }
+                else if(res.data.success === false){
+                    alert(res.data.body);
                 }
                 else{
-                    alert("Email is already registered in the system.");
+                    // complete registration if user added successfully 
+                    props.handleValidation();
                 }
             }).catch(err => console.log(err));
         }
